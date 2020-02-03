@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from maze import Maze
 
@@ -226,6 +227,21 @@ def naive_write_priors(path):
     # print(actions_reload)
     # print("------------------------------------")
     # print(states - states_reload)
+
+
+def exist_or_create_folder(path_name):
+    """
+    Check whether a path exists, if not, then create this path.
+    :param path_name: i.e., './logs/log.txt' or './logs/'
+    :return: flag == False: failed; flag == True: successful.
+    """
+    pure_path = os.path.dirname(path_name)
+    if not os.path.exists(pure_path):
+        try:
+            os.makedirs(pure_path)
+        except OSError:
+            pass
+    return path_name
 
 
 def main():

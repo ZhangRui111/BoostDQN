@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from maze import Maze
 from BoostDQN import BoostDQN
 from DQN import DQN
-from utils.utils import plot_results, plot_results_average
+from utils.utils import plot_results, plot_results_average, exist_or_create_folder
 
 
 def train(env, prior=False, save_ind=None, beta=None):
@@ -15,7 +15,10 @@ def train(env, prior=False, save_ind=None, beta=None):
         dqn = DQN("./data/params.conf")
 
     init_pos = [[4, 0], [0, 4], [9, 9]]
-    writer = SummaryWriter("./logs/{}/{}".format(env.map_info, dqn.info))
+    if beta is not None:
+        writer = SummaryWriter(exist_or_create_folder("./logs/{}/{}_{}".format(env.map_info, dqn.info, beta)))
+    else:
+        writer = SummaryWriter(exist_or_create_folder("./logs/{}/{}".format(env.map_info, dqn.info)))
 
     ep_rs = []
     ep_r_steps = []
@@ -64,34 +67,34 @@ def train(env, prior=False, save_ind=None, beta=None):
 
     if save_ind is not None:
         if beta is None:
-            np.savetxt("./logs/{}/{}/ep_rs_{}.npy"
-                       .format(env.map_info, dqn.info, save_ind), np.array(ep_rs))
-            np.savetxt("./logs/{}/{}/ep_rs_step_{}.npy"
-                       .format(env.map_info, dqn.info, save_ind), np.array(ep_r_steps))
-            np.savetxt("./logs/{}/{}/step_rs_{}.npy"
-                       .format(env.map_info, dqn.info, save_ind), np.array(step_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/ep_rs_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind)), np.array(ep_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/ep_rs_step_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind)), np.array(ep_r_steps))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/step_rs_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind)), np.array(step_rs))
         else:
-            np.savetxt("./logs/{}/{}_{}/ep_rs_{}.npy"
-                       .format(env.map_info, dqn.info, beta, save_ind), np.array(ep_rs))
-            np.savetxt("./logs/{}/{}_{}/ep_rs_step_{}.npy"
-                       .format(env.map_info, dqn.info, beta, save_ind), np.array(ep_r_steps))
-            np.savetxt("./logs/{}/{}_{}/step_rs_{}.npy"
-                       .format(env.map_info, dqn.info, beta, save_ind), np.array(step_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/ep_rs_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind)), np.array(ep_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/ep_rs_step_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind)), np.array(ep_r_steps))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/step_rs_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind)), np.array(step_rs))
     else:
         if beta is None:
-            np.savetxt("./logs/{}/{}/ep_rs.npy"
-                       .format(env.map_info, dqn.info), np.array(ep_rs))
-            np.savetxt("./logs/{}/{}/ep_rs_step.npy"
-                       .format(env.map_info, dqn.info), np.array(ep_r_steps))
-            np.savetxt("./logs/{}/{}/step_rs.npy"
-                       .format(env.map_info, dqn.info), np.array(step_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/ep_rs.npy"
+                       .format(env.map_info, dqn.info)), np.array(ep_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/ep_rs_step.npy"
+                       .format(env.map_info, dqn.info)), np.array(ep_r_steps))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}/step_rs.npy"
+                       .format(env.map_info, dqn.info)), np.array(step_rs))
         else:
-            np.savetxt("./logs/{}/{}_{}/ep_rs.npy"
-                       .format(env.map_info, dqn.info, beta), np.array(ep_rs))
-            np.savetxt("./logs/{}/{}_{}/ep_rs_step.npy"
-                       .format(env.map_info, dqn.info, beta), np.array(ep_r_steps))
-            np.savetxt("./logs/{}/{}_{}/step_rs.npy"
-                       .format(env.map_info, dqn.info, beta), np.array(step_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/ep_rs.npy"
+                       .format(env.map_info, dqn.info, beta)), np.array(ep_rs))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/ep_rs_step.npy"
+                       .format(env.map_info, dqn.info, beta)), np.array(ep_r_steps))
+            np.savetxt(exist_or_create_folder("./logs/{}/{}_{}/step_rs.npy"
+                       .format(env.map_info, dqn.info, beta)), np.array(step_rs))
 
 
 def main():
