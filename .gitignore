@@ -1,0 +1,10 @@
+*.iml
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.idea/
+
+# My configurations:
+data/
+logs/
+events*
