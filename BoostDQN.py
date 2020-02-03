@@ -42,7 +42,7 @@ class BoostPrior(object):
 
 
 class BoostDQN(object):
-    def __init__(self, beta, params_path, prior_path):
+    def __init__(self, params_path, prior_path, beta):
         self.info = 'prior'
         self.params = parse_model_config(params_path)
         self.batch_size = int(self.params['batch_size'])

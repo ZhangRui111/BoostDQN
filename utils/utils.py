@@ -72,8 +72,8 @@ def plot_results(path, interval=10, save_ind=0):
 def plot_results_average(path, interval=10):
     dqn_ma_holder, prior_ma_holder = [], []
     for save_ind in [0, 1, 2, 3, 4]:
-        step_rs_dqn = np.loadtxt("{}dqn/ep_rs_step_r_{}.npy".format(path, save_ind)).tolist()
-        step_rs_prior = np.loadtxt("{}prior/ep_rs_step_r_{}.npy".format(path, save_ind)).tolist()
+        step_rs_dqn = np.loadtxt("{}dqn/step_rs_{}.npy".format(path, save_ind)).tolist()
+        step_rs_prior = np.loadtxt("{}prior/step_rs_{}.npy".format(path, save_ind)).tolist()
         step_rs_dqn_ma, step_rs_prior_ma = [], []  # moving average
 
         for ind_s in range(interval - 1, len(step_rs_dqn)):

@@ -8,9 +8,9 @@ from DQN import DQN
 from utils.utils import plot_results, plot_results_average
 
 
-def train(env, beta=0.1, prior=False, save_ind=None):
+def train(env, prior=False, save_ind=None, beta=None):
     if prior:
-        dqn = BoostDQN(beta, "./data/params.conf", "./data/{}/".format(env.map_info))
+        dqn = BoostDQN("./data/params.conf", "./data/{}/".format(env.map_info), beta)
     else:
         dqn = DQN("./data/params.conf")
 
@@ -63,19 +63,35 @@ def train(env, beta=0.1, prior=False, save_ind=None):
                 break
 
     if save_ind is not None:
-        np.savetxt("./logs/{}/{}/ep_rs_{}.npy"
-                   .format(env.map_info, dqn.info, save_ind), np.array(ep_rs))
-        np.savetxt("./logs/{}/{}/ep_rs_step_{}.npy"
-                   .format(env.map_info, dqn.info, save_ind), np.array(ep_r_steps))
-        np.savetxt("./logs/{}/{}/ep_rs_step_r_{}.npy"
-                   .format(env.map_info, dqn.info, save_ind), np.array(step_rs))
+        if beta is None:
+            np.savetxt("./logs/{}/{}/ep_rs_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind), np.array(ep_rs))
+            np.savetxt("./logs/{}/{}/ep_rs_step_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind), np.array(ep_r_steps))
+            np.savetxt("./logs/{}/{}/step_rs_{}.npy"
+                       .format(env.map_info, dqn.info, save_ind), np.array(step_rs))
+        else:
+            np.savetxt("./logs/{}/{}_{}/ep_rs_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind), np.array(ep_rs))
+            np.savetxt("./logs/{}/{}_{}/ep_rs_step_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind), np.array(ep_r_steps))
+            np.savetxt("./logs/{}/{}_{}/step_rs_{}.npy"
+                       .format(env.map_info, dqn.info, beta, save_ind), np.array(step_rs))
     else:
-        np.savetxt("./logs/{}/{}/ep_rs.npy"
-                   .format(env.map_info, dqn.info), np.array(ep_rs))
-        np.savetxt("./logs/{}/{}/ep_rs_step.npy"
-                   .format(env.map_info, dqn.info), np.array(ep_r_steps))
-        np.savetxt("./logs/{}/{}/ep_rs_step_r.npy"
-                   .format(env.map_info, dqn.info), np.array(step_rs))
+        if beta is None:
+            np.savetxt("./logs/{}/{}/ep_rs.npy"
+                       .format(env.map_info, dqn.info), np.array(ep_rs))
+            np.savetxt("./logs/{}/{}/ep_rs_step.npy"
+                       .format(env.map_info, dqn.info), np.array(ep_r_steps))
+            np.savetxt("./logs/{}/{}/step_rs.npy"
+                       .format(env.map_info, dqn.info), np.array(step_rs))
+        else:
+            np.savetxt("./logs/{}/{}_{}/ep_rs.npy"
+                       .format(env.map_info, dqn.info, beta), np.array(ep_rs))
+            np.savetxt("./logs/{}/{}_{}/ep_rs_step.npy"
+                       .format(env.map_info, dqn.info, beta), np.array(ep_r_steps))
+            np.savetxt("./logs/{}/{}_{}/step_rs.npy"
+                       .format(env.map_info, dqn.info, beta), np.array(step_rs))
 
 
 def main():
@@ -84,9 +100,12 @@ def main():
     MAX_STEPS = 4e4
     env = Maze('./maps/map3.json', full_observation=True)
     # train(env, prior=False, save_ind=0)
-    for ind in [0, 1, 2, 3, 4]:
-        # train(env, prior=False, save_ind=ind)
-        train(env, beta=0.2, prior=True, save_ind=ind)
+    # for ind in [0, 1, 2, 3, 4]:
+    #     train(env, prior=False, save_ind=ind)
+    #     train(env, prior=True, save_ind=ind, beta=0.1)
+    for beta in [0.4, 0.6, 0.8, 1.0]:
+        for ind in [0, 1, 2, 3, 4]:
+            train(env, prior=True, save_ind=ind, beta=beta)
     # plot_results("./logs/map3/", interval=500, save_ind=3)
     # plot_results_average("./logs/map3/", interval=500)
 
