@@ -42,7 +42,7 @@ class BoostPrior(object):
 
 
 class BoostDQN(object):
-    def __init__(self, params_path, prior_path):
+    def __init__(self, beta, params_path, prior_path):
         self.info = 'prior'
         self.params = parse_model_config(params_path)
         self.batch_size = int(self.params['batch_size'])
@@ -66,7 +66,7 @@ class BoostDQN(object):
         self.loss_dqn_func = nn.MSELoss()
         self.loss_prior_func = nn.MSELoss()
 
-        self.prior_beta = 0.1
+        self.prior_beta = beta
         self.prior = BoostPrior(prior_path)
 
     def choose_action(self, x):
@@ -114,13 +114,15 @@ class BoostDQN(object):
         prior_q_eval = self.eval_net(self.prior.prior_states)
         prior_q_eval_max, _ = prior_q_eval.max(dim=1)
         prior_q_target = prior_q_eval.gather(1, self.prior.target_actions.long())
-        loss_prior = self.loss_prior_func(prior_q_eval_max, prior_q_target)
+        loss_prior = self.loss_prior_func(prior_q_eval_max.unsqueeze(1), prior_q_target)
         # total loss
         loss = loss_dqn + self.prior_beta * loss_prior
 
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+        return loss, loss_dqn, loss_prior
 
     def update_epsilon(self):
         self.epsilon += self.epsilon_incre

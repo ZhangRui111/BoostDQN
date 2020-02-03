@@ -1,24 +1,32 @@
+from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
 
 from maze import Maze
 from BoostDQN import BoostDQN
 from DQN import DQN
+from utils.utils import plot_results, plot_results_average
 
 
-MAX_EP = 1200
+def train(env, beta=0.1, prior=False, save_ind=None):
+    if prior:
+        dqn = BoostDQN(beta, "./data/params.conf", "./data/{}/".format(env.map_info))
+    else:
+        dqn = DQN("./data/params.conf")
 
-
-def train():
-    dqn = BoostDQN("./data/params.conf", "./data/map2/")
-    # dqn = DQN("./data/params.conf")
-
-    init_pos = [[[3, 0]], [[0, 3]], [[7, 1]]]
+    init_pos = [[4, 0], [0, 4], [9, 9]]
+    writer = SummaryWriter("./logs/{}/{}".format(env.map_info, dqn.info))
 
     ep_rs = []
+    ep_r_steps = []
+    step_rs = []
+    steps_counter = 0
+
     for i_episode in range(MAX_EP):
+        if steps_counter > MAX_STEPS:
+            break
         # Pick a start point randomly.
-        s = env.reset(init_pos[np.random.randint(0, 3)])
+        s = env.reset([init_pos[np.random.randint(0, 3)]])
         ep_r = 0
         while True:
             env.render(0.001)
@@ -26,38 +34,61 @@ def train():
 
             # take action
             s_, r, done, info = env.step(a)
-
             dqn.store_transition(s, a, r, s_)
-
             ep_r += r
-            if dqn.memory_counter > (dqn.batch_size + 1):
-                dqn.learn()
-
             s = s_
+
+            steps_counter += 1
+            writer.add_scalar("reward/step_r", r, steps_counter)
+            step_rs.append(r)
+
+            if dqn.memory_counter > (dqn.batch_size + 1):
+                if dqn.info == 'dqn':
+                    loss = dqn.learn()
+                    writer.add_scalar("loss/loss", loss.item(), steps_counter)
+                if dqn.info == 'prior':
+                    loss, loss_dqn, loss_prior = dqn.learn()
+                    writer.add_scalar("loss/loss", loss.item(), steps_counter)
+                    writer.add_scalar("loss/loss_dqn", loss_dqn.item(), steps_counter)
+                    writer.add_scalar("loss/loss_prior", loss_prior.item(), steps_counter)
 
             if done:
                 dqn.update_epsilon()
                 env.render(0.001)
-                print("Ep: {} | Ep_r: {} | Ep_epsilon: {}".format(i_episode, ep_r, dqn.epsilon))
+                print("Ep: {} | Ep_r: {} | steps_counter: {}".format(i_episode, ep_r, steps_counter))
+                writer.add_scalar("reward/ep_r", ep_r, steps_counter)
+                writer.add_scalar("params/epsilon", dqn.epsilon, steps_counter)
                 ep_rs.append(ep_r)
+                ep_r_steps.append(steps_counter)
                 break
 
-    np.savetxt("./logs/{}/ep_rs_{}.npy".format(env.map_info, dqn.info), np.array(ep_rs))
-    # ep_success = []
-    # for ind_s in range(len(ep_rs)-10):
-    #     seg = ep_rs[ind_s:ind_s+10]
-    #     ep_success.append(max(sum(seg), 0))
-    # print(ep_success)
-    # plt.plot(ep_success)
-    # plt.title("success rate in episodes")
-    # plt.show()
+    if save_ind is not None:
+        np.savetxt("./logs/{}/{}/ep_rs_{}.npy"
+                   .format(env.map_info, dqn.info, save_ind), np.array(ep_rs))
+        np.savetxt("./logs/{}/{}/ep_rs_step_{}.npy"
+                   .format(env.map_info, dqn.info, save_ind), np.array(ep_r_steps))
+        np.savetxt("./logs/{}/{}/ep_rs_step_r_{}.npy"
+                   .format(env.map_info, dqn.info, save_ind), np.array(step_rs))
+    else:
+        np.savetxt("./logs/{}/{}/ep_rs.npy"
+                   .format(env.map_info, dqn.info), np.array(ep_rs))
+        np.savetxt("./logs/{}/{}/ep_rs_step.npy"
+                   .format(env.map_info, dqn.info), np.array(ep_r_steps))
+        np.savetxt("./logs/{}/{}/ep_rs_step_r.npy"
+                   .format(env.map_info, dqn.info), np.array(step_rs))
 
 
 def main():
-    global env
-    env = Maze('./maps/map2.json', full_observation=True)
-    env.after(100, train)  # Call function update() once after given time/ms.
-    env.mainloop()  # mainloop() to run the application.
+    global MAX_EP, MAX_STEPS
+    MAX_EP = 9999
+    MAX_STEPS = 4e4
+    env = Maze('./maps/map3.json', full_observation=True)
+    # train(env, prior=False, save_ind=0)
+    for ind in [0, 1, 2, 3, 4]:
+        # train(env, prior=False, save_ind=ind)
+        train(env, beta=0.2, prior=True, save_ind=ind)
+    # plot_results("./logs/map3/", interval=500, save_ind=3)
+    # plot_results_average("./logs/map3/", interval=500)
 
 
 if __name__ == '__main__':

@@ -96,6 +96,8 @@ class DQN(object):
         loss.backward()
         self.optimizer.step()
 
+        return loss
+
     def update_epsilon(self):
         self.epsilon += self.epsilon_incre
         self.epsilon = min(self.epsilon, self.epsilon_target)
