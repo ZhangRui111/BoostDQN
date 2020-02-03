@@ -5,6 +5,6 @@ __pycache__/
 .idea/
 
 # My configurations:
-data/
+# data/
 logs/
 events*

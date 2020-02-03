@@ -9,6 +9,7 @@ class Maze(tk.Tk, object):
         super(Maze, self).__init__()
 
         map = self._read_map(path_to_map)
+        self.map_info = path_to_map.split("/")[-1].split(".")[0]
         self.height = map['height']
         self.width = map['width']
         self.hells_origin = map['hells']  # all hells' position.

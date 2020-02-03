@@ -6,18 +6,18 @@ from BoostDQN import BoostDQN
 from DQN import DQN
 
 
-MAX_EP = 2000
+MAX_EP = 1200
 
 
 def train():
-    dqn = BoostDQN()
-    # dqn = DQN()
+    dqn = BoostDQN("./data/params.conf", "./data/map2/")
+    # dqn = DQN("./data/params.conf")
 
     init_pos = [[[3, 0]], [[0, 3]], [[7, 1]]]
 
-    print('\nCollecting experience...')
     ep_rs = []
     for i_episode in range(MAX_EP):
+        # Pick a start point randomly.
         s = env.reset(init_pos[np.random.randint(0, 3)])
         ep_r = 0
         while True:
@@ -33,15 +33,16 @@ def train():
             if dqn.memory_counter > (dqn.batch_size + 1):
                 dqn.learn()
 
+            s = s_
+
             if done:
                 dqn.update_epsilon()
                 env.render(0.001)
                 print("Ep: {} | Ep_r: {} | Ep_epsilon: {}".format(i_episode, ep_r, dqn.epsilon))
                 ep_rs.append(ep_r)
                 break
-            s = s_
 
-    np.savetxt("./logs/ep_rs_prior.npy", np.array(ep_rs))
+    np.savetxt("./logs/{}/ep_rs_{}.npy".format(env.map_info, dqn.info), np.array(ep_rs))
     # ep_success = []
     # for ind_s in range(len(ep_rs)-10):
     #     seg = ep_rs[ind_s:ind_s+10]
