@@ -91,6 +91,7 @@ class BoostDQN(object):
         # target parameter update
         if self.learn_step_counter % self.target_replace_iter == 0:
             self.target_net.load_state_dict(self.eval_net.state_dict())
+            print("---------- target parameter update ----------")
         self.learn_step_counter += 1
 
         # sample batch transitions
@@ -111,8 +112,15 @@ class BoostDQN(object):
         q_target = b_r + self.gamma * q_next.view(self.batch_size, 1)  # shape (batch, 1)
         loss_dqn = self.loss_dqn_func(q_eval, q_target)
         # prior loss
+        # ----------------------------------------
+        # case 1:
+        # prior_q_eval_max = self.eval_net(self.prior.prior_states).max(dim=1)[0]
+        # case 2:
+        # prior_q_eval_max = self.eval_net(self.prior.prior_states).detach().max(dim=1)[0]
+        # case 3:
+        prior_q_eval_max = self.target_net(self.prior.prior_states).detach().max(dim=1)[0]
+        # ----------------------------------------
         prior_q_eval = self.eval_net(self.prior.prior_states)
-        prior_q_eval_max, _ = prior_q_eval.max(dim=1)
         prior_q_target = prior_q_eval.gather(1, self.prior.target_actions.long())
         loss_prior = self.loss_prior_func(prior_q_eval_max.unsqueeze(1), prior_q_target)
         # total loss

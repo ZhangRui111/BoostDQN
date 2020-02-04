@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from maze import Maze
 from BoostDQN import BoostDQN
 from DQN import DQN
-from utils.utils import plot_results, plot_results_average, exist_or_create_folder
+from utils.utils import exist_or_create_folder
+from utils.data_analysis import plot_single_results, plot_results, plot_multi_results
 
 
 def train(env, prior=False, save_ind=None, beta=None):
@@ -106,11 +107,9 @@ def main():
     # for ind in [0, 1, 2, 3, 4]:
     #     train(env, prior=False, save_ind=ind)
     #     train(env, prior=True, save_ind=ind, beta=0.1)
-    for beta in [0.4, 0.6, 0.8, 1.0]:
+    for beta in [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]:
         for ind in [0, 1, 2, 3, 4]:
             train(env, prior=True, save_ind=ind, beta=beta)
-    # plot_results("./logs/map3/", interval=500, save_ind=3)
-    # plot_results_average("./logs/map3/", interval=500)
 
 
 if __name__ == '__main__':
