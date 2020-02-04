@@ -100,7 +100,7 @@ def train(env, prior=False, save_ind=None, beta=None):
 
 def main():
     global MAX_EP, MAX_STEPS
-    MAX_EP = 9999
+    MAX_EP = 99999999
     MAX_STEPS = 5e6
     env = Maze('./maps/map4.json', full_observation=True)
     train(env, prior=False, save_ind=0)
