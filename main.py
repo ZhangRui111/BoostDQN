@@ -101,12 +101,13 @@ def train(env, prior=False, save_ind=None, beta=None):
 def main():
     global MAX_EP, MAX_STEPS
     MAX_EP = 9999
-    MAX_STEPS = 4e4
-    env = Maze('./maps/map3.json', full_observation=True)
-    # train(env, prior=False, save_ind=0)
-    for ind in [0, 1, 2, 3, 4]:
-        train(env, prior=False, save_ind=ind)
-        # train(env, prior=True, save_ind=ind, beta=0.1)
+    MAX_STEPS = 5e6
+    env = Maze('./maps/map4.json', full_observation=True)
+    train(env, prior=False, save_ind=0)
+    # train(env, prior=True, save_ind=0, beta=1)
+    # for ind in [0, 1, 2, 3, 4]:
+    #     train(env, prior=False, save_ind=ind)
+    #     # train(env, prior=True, save_ind=ind, beta=0.1)
     # for beta in [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]:
     #     for ind in [0, 1, 2, 3, 4]:
     #         train(env, prior=True, save_ind=ind, beta=beta)

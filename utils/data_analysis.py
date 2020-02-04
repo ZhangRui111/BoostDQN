@@ -102,7 +102,7 @@ def plot_multi_results(path, interval=500):
 def main():
     # plot_single_results("../logs/map3/exp1/case1/", interval=500, beta=0.1, save_ind=0)
     # plot_results("../logs/map3/exp1/case1/", interval=500)
-    plot_multi_results("../logs/map3/exp1/case2/", interval=500)
+    plot_multi_results("../logs/map3/exp1/case3/", interval=500)
 
 
 if __name__ == '__main__':

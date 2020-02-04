@@ -116,9 +116,9 @@ class BoostDQN(object):
         # case 1:
         # prior_q_eval_max = self.eval_net(self.prior.prior_states).max(dim=1)[0]
         # case 2:
-        # prior_q_eval_max = self.eval_net(self.prior.prior_states).detach().max(dim=1)[0]
+        prior_q_eval_max = self.eval_net(self.prior.prior_states).detach().max(dim=1)[0]
         # case 3:
-        prior_q_eval_max = self.target_net(self.prior.prior_states).detach().max(dim=1)[0]
+        # prior_q_eval_max = self.target_net(self.prior.prior_states).detach().max(dim=1)[0]
         # ----------------------------------------
         prior_q_eval = self.eval_net(self.prior.prior_states)
         prior_q_target = prior_q_eval.gather(1, self.prior.target_actions.long())
