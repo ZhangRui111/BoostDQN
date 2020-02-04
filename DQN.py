@@ -28,7 +28,7 @@ class Net(nn.Module):
 class DQN(object):
     def __init__(self, params_path):
         self.info = 'dqn'
-        self.params = parse_model_config(params_path)
+        self.params = parse_model_config("{}params.conf".format(params_path))
         self.batch_size = int(self.params['batch_size'])
         self.lr = float(self.params['lr'])
         self.epsilon = float(self.params['epsilon_init'])
@@ -91,6 +91,10 @@ class DQN(object):
         q_next = self.target_net(b_s_).detach().max(1)[0]  # detach from graph, don't backpropagate
         q_target = b_r + self.gamma * q_next.view(self.batch_size, 1)  # shape (batch, 1)
         loss = self.loss_func(q_eval, q_target)
+
+        # epsilon-greedy
+        self.epsilon += self.epsilon_incre
+        self.epsilon = min(self.epsilon, self.epsilon_target)
 
         self.optimizer.zero_grad()
         loss.backward()

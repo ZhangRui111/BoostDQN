@@ -42,9 +42,9 @@ class BoostPrior(object):
 
 
 class BoostDQN(object):
-    def __init__(self, params_path, prior_path, beta):
+    def __init__(self, path, beta):
         self.info = 'prior'
-        self.params = parse_model_config(params_path)
+        self.params = parse_model_config("{}params.conf".format(path))
         self.batch_size = int(self.params['batch_size'])
         self.lr = float(self.params['lr'])
         self.epsilon = float(self.params['epsilon_init'])
@@ -67,7 +67,7 @@ class BoostDQN(object):
         self.loss_prior_func = nn.MSELoss()
 
         self.prior_beta = beta
-        self.prior = BoostPrior(prior_path)
+        self.prior = BoostPrior(path)
 
     def choose_action(self, x):
         x = torch.from_numpy(x).float().to('cuda').unsqueeze(0)
@@ -125,6 +125,10 @@ class BoostDQN(object):
         loss_prior = self.loss_prior_func(prior_q_eval_max.unsqueeze(1), prior_q_target)
         # total loss
         loss = loss_dqn + self.prior_beta * loss_prior
+
+        # epsilon-greedy
+        self.epsilon += self.epsilon_incre
+        self.epsilon = min(self.epsilon, self.epsilon_target)
 
         self.optimizer.zero_grad()
         loss.backward()

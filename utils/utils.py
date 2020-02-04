@@ -29,12 +29,21 @@ def parse_model_config(path):
 
 
 def write_priors(save_path, map_path, init_points, actions_target):
+    """
+    Write prior knowledge for a specific map.
+    :param save_path:
+    :param map_path:
+    :param init_points:
+    :param actions_target:
+    :return:
+    """
     env = Maze(map_path, full_observation=True)
     states_prior = []
-    for point in init_points:
-        s = env.reset([point])
-        # env.render(0.01)
-        # print(s.reshape(10, 10))
+    for ind in range(len(init_points)):
+        s = env.reset([init_points[ind]])
+        env.render(0.01)
+        print(s.reshape(16, 16))
+        print(actions_target[ind])
         states_prior.append(s)
     states = np.array(states_prior)
     actions = np.array(actions_target).reshape(states.shape[0], 1)
@@ -169,10 +178,10 @@ def exist_or_create_folder(path_name):
 
 def main():
     # naive_write_priors("../data/")
-    init_points = [[2, 0], [2, 2], [2, 4], [2, 6], [2, 9],
-                   [7, 0], [7, 2], [7, 4], [8, 6], [8, 8]]
-    acts_t = [1, 2, 3, 1, 3, 1, 1, 1, 2, 0]
-    write_priors("../data/map3/", "../maps/map3.json", init_points, acts_t)
+    init_points = [[2, 1], [2, 4], [2, 10], [6, 4], [6, 8],
+                   [6, 14], [11, 2], [11, 8], [14, 14], [15, 4]]
+    acts_t = [0, 3, 3, 2, 1, 2, 1, 2, 0, 2]
+    write_priors("../data/map4/", "../maps/map4.json", init_points, acts_t)
 
     # for i in range(10):
     #     a = np.random.randint(0, 3)

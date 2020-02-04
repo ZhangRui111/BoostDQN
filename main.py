@@ -1,6 +1,5 @@
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
-import matplotlib.pyplot as plt
 
 from maze import Maze
 from BoostDQN import BoostDQN
@@ -11,11 +10,12 @@ from utils.data_analysis import plot_single_results, plot_results, plot_multi_re
 
 def train(env, prior=False, save_ind=None, beta=None):
     if prior:
-        dqn = BoostDQN("./data/params.conf", "./data/{}/".format(env.map_info), beta)
+        dqn = BoostDQN("./data/{}/".format(env.map_info), beta)
     else:
-        dqn = DQN("./data/params.conf")
+        dqn = DQN("./data/{}/".format(env.map_info))
 
-    init_pos = [[4, 0], [0, 4], [9, 9]]
+    # init_pos = [[4, 0], [0, 4], [9, 9]]  # map3
+    init_pos = [[7, 0], [0, 6], [15, 13]]  # map4
     if beta is not None:
         writer = SummaryWriter(exist_or_create_folder("./logs/{}/{}_{}".format(env.map_info, dqn.info, beta)))
     else:
@@ -104,12 +104,12 @@ def main():
     MAX_STEPS = 4e4
     env = Maze('./maps/map3.json', full_observation=True)
     # train(env, prior=False, save_ind=0)
-    # for ind in [0, 1, 2, 3, 4]:
-    #     train(env, prior=False, save_ind=ind)
-    #     train(env, prior=True, save_ind=ind, beta=0.1)
-    for beta in [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]:
-        for ind in [0, 1, 2, 3, 4]:
-            train(env, prior=True, save_ind=ind, beta=beta)
+    for ind in [0, 1, 2, 3, 4]:
+        train(env, prior=False, save_ind=ind)
+        # train(env, prior=True, save_ind=ind, beta=0.1)
+    # for beta in [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]:
+    #     for ind in [0, 1, 2, 3, 4]:
+    #         train(env, prior=True, save_ind=ind, beta=beta)
 
 
 if __name__ == '__main__':
