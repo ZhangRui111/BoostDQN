@@ -1,16 +1,19 @@
+import torch
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 
 from maze import Maze
 from BoostDQN import BoostDQN
 from DQN import DQN
-from utils.utils import exist_or_create_folder
+from utils.utils import exist_or_create_folder, parse_model_config
 from utils.data_analysis import plot_single_results, plot_results, plot_multi_results
 
 
-def train(env, prior=False, save_ind=None, beta=None):
+def train(env, prior=False, save_ind=None, beta=None, prior_token=None):
     if prior:
-        dqn = BoostDQN("./data/{}/".format(env.map_info), beta)
+        assert beta is not None, "Please provide beta!"
+        assert prior_token is not None, "Please provide prior_token!"
+        dqn = BoostDQN("./data/{}/".format(env.map_info), beta, prior_token)
     else:
         dqn = DQN("./data/{}/".format(env.map_info))
 
@@ -26,8 +29,14 @@ def train(env, prior=False, save_ind=None, beta=None):
     step_rs = []
     steps_counter = 0
 
-    for i_episode in range(MAX_EP):
-        if steps_counter > MAX_STEPS:
+    params = parse_model_config("./data/{}/params.conf".format(env.map_info))
+    max_ep = int(float(params["max_ep"]))
+    max_steps = int(float(params["max_steps"]))
+
+    writer.add_graph(dqn.eval_net, torch.rand(256).unsqueeze(0).to('cuda'))
+
+    for i_episode in range(max_ep):
+        if steps_counter > max_steps:
             break
         # Pick a start point randomly.
         s = env.reset([init_pos[np.random.randint(0, 3)]])
@@ -100,11 +109,9 @@ def train(env, prior=False, save_ind=None, beta=None):
 
 def main():
     global MAX_EP, MAX_STEPS
-    MAX_EP = 99999999
-    MAX_STEPS = 5e6
     env = Maze('./maps/map4.json', full_observation=True)
-    train(env, prior=False, save_ind=0)
-    # train(env, prior=True, save_ind=0, beta=1)
+    # train(env, prior=False, save_ind=0)
+    train(env, prior=True, save_ind=0, beta=0.6, prior_token=2)
     # for ind in [0, 1, 2, 3, 4]:
     #     train(env, prior=False, save_ind=ind)
     #     # train(env, prior=True, save_ind=ind, beta=0.1)

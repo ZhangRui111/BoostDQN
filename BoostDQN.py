@@ -26,10 +26,13 @@ class Net(nn.Module):
 
 
 class BoostPrior(object):
-    def __init__(self, path, to_tensor=True):
+    def __init__(self, path, batch_size, to_tensor=True):
         super().__init__()
         self.path = path
         self.prior_states, self.target_actions = self.load_priors()
+        assert len(self.prior_states) == len(self.target_actions)
+        self.capacity = len(self.target_actions)
+        self.batch_size = batch_size
         if self.target_actions.ndim == 1:
             self.target_actions = self.target_actions.reshape(self.prior_states.shape[0], 1)
         if to_tensor:
@@ -40,9 +43,15 @@ class BoostPrior(object):
         return np.loadtxt("{}states_prior.npy".format(self.path)), \
                np.loadtxt("{}actions_target.npy".format(self.path))
 
+    def get_prior_batch(self):
+        sample_index = np.random.choice(self.capacity, self.batch_size)
+        p_s = self.prior_states[sample_index, :]
+        t_a = self.target_actions[sample_index, :]
+        return p_s, t_a
+
 
 class BoostDQN(object):
-    def __init__(self, path, beta):
+    def __init__(self, path, beta, prior_token):
         self.info = 'prior'
         self.params = parse_model_config("{}params.conf".format(path))
         self.batch_size = int(self.params['batch_size'])
@@ -55,6 +64,7 @@ class BoostDQN(object):
         self.memory_capacity = int(self.params['memory_capacity'])
         self.n_actions = int(self.params['n_actions'])
         self.n_states = int(self.params['n_states'])
+        self.prior_batch_size = int(self.params['prior_batch_size'])
 
         self.eval_net = Net(self.n_states, self.n_actions).to('cuda')
         self.target_net = Net(self.n_states, self.n_actions).to('cuda')
@@ -67,7 +77,7 @@ class BoostDQN(object):
         self.loss_prior_func = nn.MSELoss()
 
         self.prior_beta = beta
-        self.prior = BoostPrior(path)
+        self.prior = BoostPrior("{}{}/".format(path, prior_token), self.prior_batch_size)
 
     def choose_action(self, x):
         x = torch.from_numpy(x).float().to('cuda').unsqueeze(0)
@@ -111,17 +121,19 @@ class BoostDQN(object):
         q_next = self.target_net(b_s_).detach().max(dim=1)[0]  # detach from graph, don't backpropagate
         q_target = b_r + self.gamma * q_next.view(self.batch_size, 1)  # shape (batch, 1)
         loss_dqn = self.loss_dqn_func(q_eval, q_target)
+
         # prior loss
+        b_p_s, b_t_a = self.prior.get_prior_batch()  # get batch prior data
         # ----------------------------------------
         # case 1:
-        # prior_q_eval_max = self.eval_net(self.prior.prior_states).max(dim=1)[0]
+        # prior_q_eval_max = self.eval_net(b_p_s).max(dim=1)[0]
         # case 2:
-        prior_q_eval_max = self.eval_net(self.prior.prior_states).detach().max(dim=1)[0]
+        prior_q_eval_max = self.eval_net(b_p_s).detach().max(dim=1)[0]
         # case 3:
-        # prior_q_eval_max = self.target_net(self.prior.prior_states).detach().max(dim=1)[0]
+        # prior_q_eval_max = self.target_net(b_p_s).detach().max(dim=1)[0]
         # ----------------------------------------
-        prior_q_eval = self.eval_net(self.prior.prior_states)
-        prior_q_target = prior_q_eval.gather(1, self.prior.target_actions.long())
+        prior_q_eval = self.eval_net(b_p_s)
+        prior_q_target = prior_q_eval.gather(1, b_t_a.long())
         loss_prior = self.loss_prior_func(prior_q_eval_max.unsqueeze(1), prior_q_target)
         # total loss
         loss = loss_dqn + self.prior_beta * loss_prior
