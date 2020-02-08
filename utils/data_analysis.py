@@ -11,7 +11,7 @@ def get_moving_average(path, interval=500, trip=39000):
     :return:
     """
     ma_holder = []
-    for save_ind in [0, 1, 2, 3]:
+    for save_ind in [0, 1, 2, 3, 4]:
         step_rs = np.loadtxt("{}step_rs_{}.npy".format(path, save_ind)).tolist()
         step_rs_ma = []  # moving average
         for ind_s in range(interval - 1, len(step_rs)):
@@ -80,20 +80,20 @@ def plot_multi_results(path, interval=500):
     :return:
     """
     dqn_ma = get_moving_average("{}dqn/".format(path), interval)
-    prior_0_1_ma = get_moving_average("{}token_1/".format(path), interval)
-    prior_0_2_ma = get_moving_average("{}token_2/".format(path), interval)
-    prior_0_4_ma = get_moving_average("{}token_3/".format(path), interval)
-    # prior_0_6_ma = get_moving_average("{}prior_{}/".format(path, 0.6), interval)
-    # prior_0_8_ma = get_moving_average("{}prior_{}/".format(path, 0.8), interval)
-    # prior_1_0_ma = get_moving_average("{}prior_{}/".format(path, 1.0), interval)
+    prior_0_1_ma = get_moving_average("{}prior_{}/".format(path, 0.1), interval)
+    prior_0_2_ma = get_moving_average("{}prior_{}/".format(path, 0.2), interval)
+    prior_0_4_ma = get_moving_average("{}prior_{}/".format(path, 0.4), interval)
+    prior_0_6_ma = get_moving_average("{}prior_{}/".format(path, 0.6), interval)
+    prior_0_8_ma = get_moving_average("{}prior_{}/".format(path, 0.8), interval)
+    prior_1_0_ma = get_moving_average("{}prior_{}/".format(path, 1.0), interval)
 
     plt.plot(dqn_ma, label='dqn')
-    plt.plot(prior_0_1_ma, label='10 states')
-    plt.plot(prior_0_2_ma, label='18 states')
-    plt.plot(prior_0_4_ma, label='a full trajectory')
-    # plt.plot(prior_0_6_ma, label='delta-0.6')
-    # plt.plot(prior_0_8_ma, label='delta-0.8')
-    # plt.plot(prior_1_0_ma, label='delta-1.0')
+    plt.plot(prior_0_1_ma, label='delta-0.1')
+    plt.plot(prior_0_2_ma, label='delta-0.2')
+    plt.plot(prior_0_4_ma, label='delta-0.4')
+    plt.plot(prior_0_6_ma, label='delta-0.6')
+    plt.plot(prior_0_8_ma, label='delta-0.8')
+    plt.plot(prior_1_0_ma, label='delta-1.0')
     plt.title("Moving average of step_reward in {}".format(interval))
     plt.legend(loc='best')
     plt.xlabel('number of steps')  # plot figure's x axis name.
@@ -104,7 +104,7 @@ def plot_multi_results(path, interval=500):
 def main():
     # plot_single_results("../logs/map3/exp1/case1/", interval=500, beta=0.1, save_ind=0)
     # plot_results("../logs/map3/exp1/case1/", interval=500)
-    plot_multi_results("../logs/map4/", interval=500)
+    plot_multi_results("../logs/map3/exp1/case2/", interval=500)
 
 
 if __name__ == '__main__':
